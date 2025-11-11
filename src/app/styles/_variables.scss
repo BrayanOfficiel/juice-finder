@@ -1,0 +1,106 @@
+// Juice Finder - Variables de style
+// Inspiré de la charte graphique Juice
+
+// ===== Palette de couleurs =====
+$color-primary: #2853FE;        // Bleu principal
+$color-secondary: #092C42;      // Bleu foncé
+$color-background-light: #F5FBFF; // Fond clair principal
+$color-background-dark: #011C2D; // Fond sombre (header / contrastes)
+$color-background: $color-background-dark; // Thème sombre par défaut
+$color-text: #F5FBFF;            // Texte principal clair sur fond sombre
+$color-surface-text: #092C42;    // Texte sur surfaces blanches (cartes, inputs)
+$color-accent: #2853FE;         // Accent (identique au primaire)
+$color-success: #9DEC09;        // Vert néon
+$color-info: #12D7DD;           // Cyan/Turquoise
+
+// Couleurs complémentaires
+$color-white: #FFFFFF;
+$color-gray-100: #F3F4F6;
+$color-gray-200: #E5E7EB;
+$color-gray-300: #D1D5DB;
+$color-gray-400: #9CA3AF;
+$color-gray-500: #6B7280;
+$color-gray-600: #4B5563;
+$color-gray-700: #374151;
+$color-gray-800: #1F2937;
+$color-gray-900: #111827;
+
+$color-error: #EF4444;
+$color-warning: #F59E0B;
+
+// ===== Typographie =====
+$font-family-primary: "Lexend", "owners-wide", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+$font-family-secondary: "owners-wide", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+$font-family-text: "owners", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+$font-family-accent: "owners-wide", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+// Tailles de police
+$font-size-xs: 0.75rem;    // 12px
+$font-size-sm: 0.875rem;   // 14px
+$font-size-base: 1rem;     // 16px
+$font-size-lg: 1.125rem;   // 18px
+$font-size-xl: 1.25rem;    // 20px
+$font-size-2xl: 1.5rem;    // 24px
+$font-size-3xl: 1.875rem;  // 30px
+$font-size-4xl: 2rem;      // 32px
+$font-size-5xl: 2.5rem;    // 40px
+$font-size-logo: 2.75rem;   // 44px
+$font-size-6xl: 3rem;      // 48px
+
+// Poids de police
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// ===== Espacements =====
+$spacing-xs: 0.25rem;   // 4px
+$spacing-sm: 0.5rem;    // 8px
+$spacing-md: 1rem;      // 16px
+$spacing-lg: 1.5rem;    // 24px
+$spacing-xl: 2rem;      // 32px
+$spacing-2xl: 3rem;     // 48px
+$spacing-3xl: 4rem;     // 64px
+
+// ===== Bordures =====
+$border-radius-sm: 0.375rem;  // 6px
+$border-radius-md: 0.5rem;    // 8px
+$border-radius-lg: 0.75rem;   // 12px
+$border-radius-xl: 1rem;      // 16px
+$border-radius-full: 9999px;
+
+// ===== Ombres =====
+$shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+$shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+$shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+$shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+// ===== Transitions =====
+$transition-fast: 150ms ease-in-out;
+$transition-normal: 300ms ease-in-out;
+$transition-slow: 500ms ease-in-out;
+
+// ===== Z-index =====
+$z-index-dropdown: 1000;
+$z-index-sticky: 1020;
+$z-index-fixed: 1030;
+$z-index-modal-backdrop: 1040;
+$z-index-modal: 1050;
+$z-index-popover: 1060;
+$z-index-tooltip: 1070;
+
+// ===== Breakpoints =====
+$breakpoint-sm: 640px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;
+$breakpoint-2xl: 1536px;
+
+// ===== Nouvelles variables ajoutées =====
+$color-surface-dark-1: #0E2333; // Légèrement plus clair que le fond global
+$color-surface-dark-2: #132C41; // Niveau intermédiaire
+$color-surface-dark-3: #18364F; // Niveau élevé (hover, focus)
+$color-surface-glass: rgba(255,255,255,0.04); // Effet verre translucide
+$color-surface-outline: rgba(255,255,255,0.08); // Bordures discrètes sur fond sombre
+$color-gradient-header-start: #0D2232;
+$color-gradient-header-end: #162F45;

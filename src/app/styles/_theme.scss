@@ -1,0 +1,19 @@
+@import './variables';
+
+/* Extension de Tailwind avec nos couleurs personnalisées Juice */
+@theme {
+  --color-primary: #2853FE;
+  --color-secondary: #092C42;
+  --color-text: #011C2D;
+  --color-accent: #2853FE;
+  --color-background-light: #F5FBFF;
+  --color-success: #9DEC09;
+  --color-info: #12D7DD;
+  
+  /* Mapping Tailwind */
+  --color-blue-600: var(--color-primary);
+  --color-blue-900: var(--color-secondary);
+  --color-green-500: var(--color-success);
+  --color-cyan-500: var(--color-info);
+}
+

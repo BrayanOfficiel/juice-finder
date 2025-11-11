@@ -1,0 +1,230 @@
+/**
+ * Composant MapView - Carte interactive avec MapLibre GL JS
+ */
+
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import type { Restaurant } from '@/lib/types';
+import { translateType, formatAddress, formatPhoneNumber } from '@/lib/utils';
+
+interface MapViewProps {
+  restaurants: Restaurant[];
+  selectedRestaurant?: Restaurant;
+  onRestaurantSelect: (restaurant: Restaurant) => void;
+}
+
+export default function MapView({ 
+  restaurants, 
+  selectedRestaurant,
+  onRestaurantSelect 
+}: MapViewProps) {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<maplibregl.Map | null>(null);
+  const markers = useRef<maplibregl.Marker[]>([]);
+  const [mapLoaded, setMapLoaded] = useState(false);
+
+  // Initialisation de la carte
+  useEffect(() => {
+    if (!mapContainer.current || map.current) return;
+
+    const DARK_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
+    const LIGHT_FALLBACK = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
+
+    map.current = new maplibregl.Map({
+      container: mapContainer.current,
+      style: DARK_STYLE,
+      center: [2.3522, 46.6031], // Centre de la France
+      zoom: 5.5,
+    });
+
+    map.current.on('error', (e) => {
+      // Si une erreur de style survient, basculer en fallback clair
+      try {
+        if (map.current && (e as any)?.error?.sourceID) {
+          map.current.setStyle(LIGHT_FALLBACK);
+        }
+      } catch {}
+    });
+
+    map.current.addControl(new maplibregl.NavigationControl(), 'top-right');
+    map.current.addControl(new maplibregl.FullscreenControl(), 'top-right');
+
+    map.current.on('load', () => {
+      setMapLoaded(true);
+    });
+
+    // Cleanup
+    return () => {
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+    };
+  }, []);
+
+  // Mise à jour des markers
+  useEffect(() => {
+    if (!map.current || !mapLoaded) return;
+
+    // Supprime les anciens markers
+    markers.current.forEach(marker => marker.remove());
+    markers.current = [];
+
+    // Filtre les restaurants avec coordonnées valides
+    const validRestaurants = restaurants.filter(
+      r => r.meta_geo_point && 
+      !isNaN(r.meta_geo_point.lon) &&
+      !isNaN(r.meta_geo_point.lat)
+    );
+
+    if (validRestaurants.length === 0) return;
+
+    // Crée les nouveaux markers
+    validRestaurants.forEach(restaurant => {
+      if (!restaurant.meta_geo_point) return;
+
+      const el = document.createElement('div');
+      el.className = 'custom-marker';
+      el.style.width = '32px';
+      el.style.height = '32px';
+      el.style.cursor = 'pointer';
+      
+      // Icône selon le type
+      const getIcon = (type: string) => {
+        switch(type) {
+          case 'restaurant': return '🍴';
+          case 'bar': return '🍺';
+          case 'cafe': return '☕';
+          case 'fast_food': return '🍔';
+          case 'pub': return '🍻';
+          default: return '📍';
+        }
+      };
+      
+      el.innerHTML = `<div style="font-size: 24px; text-align: center; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">${getIcon(restaurant.type)}</div>`;
+
+      // Popup
+      const popupContent = `
+        <div style="min-width: 200px;">
+          <h3 style="font-weight: 600; font-size: 14px; margin: 0 0 8px 0; color: #111;">
+            ${restaurant.name || 'Sans nom'}
+          </h3>
+          <p style="font-size: 12px; color: #6b7280; margin: 4px 0;">
+            ${translateType(restaurant.type)}
+          </p>
+          ${restaurant.street || restaurant.city ? `
+            <p style="font-size: 12px; color: #6b7280; margin: 4px 0;">
+              📍 ${formatAddress(restaurant)}
+            </p>
+          ` : ''}
+          ${restaurant.phone ? `
+            <p style="font-size: 12px; color: #6b7280; margin: 4px 0;">
+              📞 ${formatPhoneNumber(restaurant.phone)}
+            </p>
+          ` : ''}
+          <button 
+            onclick="window.selectRestaurant('${restaurant.id || restaurant.name}')"
+            style="margin-top: 8px; width: 100%; padding: 6px 12px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 500;"
+          >
+            Voir les détails
+          </button>
+        </div>
+      `;
+
+      const popup = new maplibregl.Popup({ 
+        offset: 25,
+        closeButton: true,
+        closeOnClick: false,
+      }).setHTML(popupContent);
+
+      const marker = new maplibregl.Marker(el)
+        .setLngLat([restaurant.meta_geo_point.lon, restaurant.meta_geo_point.lat])
+        .setPopup(popup)
+        .addTo(map.current!);
+
+      el.addEventListener('click', () => {
+        onRestaurantSelect(restaurant);
+      });
+
+      markers.current.push(marker);
+    });
+
+    // Ajuste la vue pour inclure tous les markers
+    if (validRestaurants.length > 0) {
+      const bounds = new maplibregl.LngLatBounds();
+      validRestaurants.forEach(r => {
+        if (r.meta_geo_point) {
+          bounds.extend([r.meta_geo_point.lon, r.meta_geo_point.lat]);
+        }
+      });
+      
+      map.current.fitBounds(bounds, {
+        padding: { top: 50, bottom: 50, left: 50, right: 50 },
+        maxZoom: 14,
+        duration: 1000,
+      });
+    }
+  }, [restaurants, mapLoaded, onRestaurantSelect]);
+
+  // Centre sur le restaurant sélectionné
+  useEffect(() => {
+    if (!map.current || !selectedRestaurant?.meta_geo_point) return;
+
+    const { lon, lat } = selectedRestaurant.meta_geo_point;
+    
+    map.current.flyTo({
+      center: [lon, lat],
+      zoom: 15,
+      duration: 1500,
+    });
+
+    // Trouve et ouvre le popup correspondant
+    const marker = markers.current.find(m => {
+      const lngLat = m.getLngLat();
+      return Math.abs(lngLat.lng - lon) < 0.0001 && Math.abs(lngLat.lat - lat) < 0.0001;
+    });
+
+    if (marker) {
+      marker.togglePopup();
+    }
+  }, [selectedRestaurant]);
+
+  // Fonction globale pour la sélection depuis le popup
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).selectRestaurant = (id: string) => {
+      const restaurant = restaurants.find(r => (r.id || r.name) === id);
+      if (restaurant) {
+        onRestaurantSelect(restaurant);
+      }
+    };
+
+    return () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (window as any).selectRestaurant;
+    };
+  }, [restaurants, onRestaurantSelect]);
+
+  return (
+    <div className="relative w-full h-full rounded-lg overflow-hidden panel-dark">
+      <div ref={mapContainer} className="w-full h-full min-h-[400px] lg:min-h-[600px]" />
+      
+      {/* Attribution */}
+      <div className="absolute bottom-2 left-2 dark-surface-2 px-3 py-1.5 rounded text-xs" style={{opacity:.9}}>
+        © OpenStreetMap contributors — Données OpenDataSoft
+      </div>
+      
+      {/* Compteur */}
+      {restaurants.length > 0 && (
+        <div className="absolute top-2 left-2 dark-surface-2 px-3 py-2 rounded-lg shadow-md" style={{opacity:.95}}>
+          <p className="text-sm font-medium" style={{color:'var(--color-text)'}}>
+             📍 {restaurants.filter(r => r.meta_geo_point).length} établissement{restaurants.filter(r => r.meta_geo_point).length > 1 ? 's' : ''}
+           </p>
+         </div>
+      )}
+    </div>
+  );
+}

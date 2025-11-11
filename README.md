@@ -1,36 +1,197 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🧃 Juice Finder France
 
-## Getting Started
+Une application web moderne pour rechercher, filtrer et visualiser sur carte les restaurants, bars et cafés de France.
 
-First, run the development server:
+**🆕 Version MySQL** : Tous les établissements sont maintenant stockés localement dans une base de données MySQL pour des performances optimales et une autonomie complète.
+
+![Next.js](https://img.shields.io/badge/Next.js-14-black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+![MySQL](https://img.shields.io/badge/MySQL-8-orange)
+![Prisma](https://img.shields.io/badge/Prisma-6-2D3748)
+
+## ✨ Fonctionnalités
+
+- 🗃️ **Base de données locale** : Tous les restaurants stockés en MySQL
+- 🔄 **Synchronisation API** : Bouton pour mettre à jour depuis OpenDataSoft
+- 🔍 **Recherche instantanée** : Requêtes optimisées avec index
+- 🗺️ **Carte interactive** avec MapLibre GL JS
+- 🎯 **Filtres dynamiques** par type, région et département
+- 📊 **Pagination infinie** avec TanStack Query
+- 💾 **Export CSV** des résultats
+- 📱 **Responsive design** (mobile, tablette, desktop)
+- ⚡ **Cache intelligent** pour des performances optimales
+
+## 🛠️ Stack technique
+
+- **Framework:** Next.js 14 (App Router)
+- **Langage:** TypeScript
+- **Base de données:** MySQL / MariaDB
+- **ORM:** Prisma
+- **Styling:** Tailwind CSS
+- **State & Cache:** TanStack Query (React Query)
+- **Carte:** MapLibre GL JS
+- **HTTP Client:** Axios
+
+## 🚀 Démarrage rapide
+
+### Prérequis
+
+- Node.js 18+
+- MySQL ou MAMP/XAMPP avec MySQL
+
+### Installation
 
 ```bash
+# Cloner le repository
+git clone https://github.com/votre-username/juice-finder.git
+cd juice-finder
+
+# Installer les dépendances
+npm install
+
+# Configurer la base de données (MAMP)
+# Assurez-vous que MySQL est démarré sur le port 8889
+
+# Le fichier .env est déjà configuré pour MAMP :
+# DATABASE_URL="mysql://root:root@127.0.0.1:8889/juice_finder"
+
+# Créer la base de données
+./setup-database.sh
+
+# OU manuellement :
+npx prisma generate
+npx prisma migrate dev --name init
+
+# Lancer l'application
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Synchronisation des données
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Ouvrez http://localhost:3000
+2. Cliquez sur le bouton bleu "Mettre à jour depuis l'API" en bas à droite
+3. Attendez la synchronisation (5-10 minutes pour ~50 000 établissements)
+4. Rafraîchissez la page pour voir tous les résultats !
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📁 Structure du projet
 
-## Learn More
+```
+src/
+├── app/
+│   ├── api/
+│   │   ├── restaurants/
+│   │   │   ├── route.ts          # GET restaurants depuis MySQL
+│   │   │   └── update/
+│   │   │       └── route.ts      # POST sync avec OpenDataSoft
+│   │   └── regions/
+│   │       └── route.ts          # GET liste des régions
+│   ├── components/
+│   │   ├── SearchBar.tsx         # Barre de recherche
+│   │   ├── Filters.tsx           # Filtres dynamiques
+│   │   ├── MapView.tsx           # Carte MapLibre
+│   │   ├── ResultsList.tsx       # Liste avec pagination
+│   │   ├── RestaurantCard.tsx    # Carte établissement
+│   │   ├── UpdateButton.tsx      # Bouton de sync
+│   │   └── Loader.tsx            # Loader
+│   ├── layout.tsx
+│   ├── page.tsx
+│   └── globals.css
+├── lib/
+│   ├── db.ts                     # Client Prisma
+│   ├── api.ts                    # Fonctions API
+│   ├── types.ts                  # Types TypeScript
+│   └── utils.ts                  # Utilitaires
+├── hooks/
+│   └── useRestaurantSearch.ts    # Hook TanStack Query
+└── prisma/
+    └── schema.prisma             # Schéma base de données
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 🔌 API
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+L'application utilise l'API publique OpenDataSoft :
+```
+https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets/osm-france-food-service/records
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Paramètres supportés :
+- `q` : Recherche textuelle
+- `where` : Filtres (type, region, department)
+- `limit` : Nombre de résultats par page (défaut: 20)
+- `offset` : Pagination
+- `order_by` : Tri (défaut: name)
 
-## Deploy on Vercel
+## 🎨 Fonctionnalités avancées
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Recherche intelligente
+- Debounce de 300ms pour éviter trop de requêtes
+- Cache automatique de 5 minutes
+- Retry automatique en cas d'erreur
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Carte interactive
+- Markers personnalisés selon le type d'établissement
+- Popups avec informations détaillées
+- Zoom automatique sur les résultats
+- Focus sur l'établissement sélectionné
+
+### Export de données
+- Export CSV avec toutes les informations
+- Format compatible Excel
+- Encodage UTF-8 avec BOM
+
+## 🚀 Scripts disponibles
+
+```bash
+# Développement
+npm run dev
+
+# Build de production
+npm run build
+
+# Démarrer en production
+npm start
+
+# Linter
+npm run lint
+```
+
+## 🌐 Déploiement
+
+### Vercel (recommandé)
+```bash
+npm install -g vercel
+vercel
+```
+
+### Autre plateforme
+```bash
+npm run build
+npm start
+```
+
+## 📝 Mentions légales
+
+- **Données :** © OpenStreetMap contributors
+- **API :** OpenDataSoft
+- **Fond de carte :** CartoDB Positron
+
+## 🤝 Contribution
+
+Les contributions sont les bienvenues ! N'hésitez pas à :
+1. Fork le projet
+2. Créer une branche (`git checkout -b feature/AmazingFeature`)
+3. Commit vos changements (`git commit -m 'Add AmazingFeature'`)
+4. Push (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
+
+## 📄 License
+
+Ce projet est sous licence MIT.
+
+## 👨‍💻 Auteur
+
+Créé avec ❤️ pour découvrir les meilleurs établissements de France
+
+---
+
+**Note :** Ce projet utilise des données ouvertes d'OpenStreetMap. La qualité et la complétude des données dépendent des contributions de la communauté OSM.
