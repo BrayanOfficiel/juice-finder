@@ -10,6 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "postinstall": "prisma generate",
+    "release": "prisma migrate deploy",
     "prisma:generate": "dotenv -e .env -- npx prisma generate"
   },
   "dependencies": {
