@@ -26,7 +26,7 @@ export async function GET() {
     
     // Extraction et nettoyage
     const regionList = regions
-      .map(r => r.region)
+      .map((r: any) => r.region)
       .filter((r): r is string => !!r && r.trim() !== '')
       .sort();
     
@@ -43,4 +43,3 @@ export async function GET() {
     );
   }
 }
-
