@@ -10,7 +10,6 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "export": "next build && next export"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.1.0",

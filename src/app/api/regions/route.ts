@@ -26,7 +26,7 @@ export async function GET() {
     
     // Extraction et nettoyage
     const regionList = regions
-      .map((r: any) => r.region)
+      .map((r: { region: string | null }) => r.region)
       .filter((r): r is string => !!r && r.trim() !== '')
       .sort();
     
