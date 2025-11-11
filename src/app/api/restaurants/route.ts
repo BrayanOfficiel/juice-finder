@@ -5,7 +5,31 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import type { Restaurant as PrismaRestaurant } from '@prisma/client';
+
+type RestaurantRow = {
+  id: number | string;
+  name: string | null;
+  type: string | null;
+  cuisine: string | null;
+  phone: string | null;
+  website: string | null;
+  email: string | null;
+  street: string | null;
+  housenumber: string | null;
+  postcode: string | null;
+  city: string | null;
+  region: string | null;
+  department: string | null;
+  opening_hours: string | null;
+  wheelchair: string | null;
+  delivery: string | null;
+  takeaway: string | null;
+  outdoor_seating: string | null;
+  lat: number | null;
+  lon: number | null;
+  osm_id: string | null;
+  osm_type: string | null;
+};
 
 export async function GET(request: NextRequest) {
   try {
@@ -51,14 +75,14 @@ export async function GET(request: NextRequest) {
     }
     
     // Récupération des données avec pagination
-    let restaurants: PrismaRestaurant[];
+    let restaurants: RestaurantRow[];
     let totalCount: number;
 
     // Si tri par distance, utiliser une requête SQL brute avec formule Haversine
     if (sortBy === 'distance' && userLat !== 0 && userLon !== 0) {
       // Construction de la clause WHERE pour SQL brut
       let whereClause = 'WHERE name IS NOT NULL';
-      const queryParams: string[] = [];
+      const queryParams: any[] = [];
       
       if (search) {
         whereClause += ' AND name LIKE ?';
@@ -106,42 +130,12 @@ export async function GET(request: NextRequest) {
       `;
       
       try {
-        // Mise à jour des types pour les résultats des requêtes SQL brutes
-        const [restaurantsResult, countResult] = await Promise.all([
-          prisma.$queryRawUnsafe<Array<{ [key: string]: unknown }>>(query, ...queryParams),
-          prisma.$queryRawUnsafe<Array<{ count: number }>>(countQuery, ...queryParams),
+        const [restaurantsResult, countResult]: any = await Promise.all([
+          prisma.$queryRawUnsafe(query, ...queryParams),
+          prisma.$queryRawUnsafe(countQuery, ...queryParams),
         ]);
 
-        // Conversion explicite des résultats pour correspondre au type attendu
-        restaurants = restaurantsResult.map((r) => ({
-          id: r.id as number,
-          name: r.name as string | null,
-          type: r.type as string | null,
-          phone: r.phone as string | null,
-          website: r.website as string | null,
-          email: r.email as string | null,
-          cuisine: r.cuisine as string | null,
-          street: r.street as string | null,
-          housenumber: r.housenumber as string | null,
-          postcode: r.postcode as string | null,
-          city: r.city as string | null,
-          region: r.region as string | null,
-          department: r.department as string | null,
-          opening_hours: r.opening_hours as string | null,
-          wheelchair: r.wheelchair as string | null,
-          delivery: r.delivery as string | null,
-          takeaway: r.takeaway as string | null,
-          outdoor_seating: r.outdoor_seating as string | null,
-          lat: r.lat as number | null,
-          lon: r.lon as number | null,
-          osm_id: r.osm_id as string | null,
-          osm_type: r.osm_type as string | null,
-          meta_osm_id: r.meta_osm_id as string | null,
-          meta_osm_type: r.meta_osm_type as string | null,
-          last_update: r.last_update as Date | null,
-          created_at: r.created_at as Date || new Date(), // Correction pour éviter null
-        }));
-
+        restaurants = restaurantsResult;
         totalCount = Number(countResult[0]?.count) || 0;
       } catch (error) {
         console.error('Erreur requête SQL distance:', error);
@@ -163,7 +157,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Transformation des données pour correspondre au format attendu
-    const results = restaurants.map((r: PrismaRestaurant) => ({
+    const results = restaurants.map((r: RestaurantRow) => ({
       id: r.id.toString(),
       name: r.name,
       type: r.type,
