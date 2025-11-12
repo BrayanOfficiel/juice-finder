@@ -1,5 +1,5 @@
 /**
- * Composant Filters - Filtres de recherche (type, région, département, export)
+ * Composant Filters - Filtres de recherche (type, localisation, arrondissement, export)
  */
 
 'use client';
@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faDownload, faRotateRight, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 import type { RestaurantType, FilterState, Restaurant } from '@/lib/types';
 import { exportToCSV } from '@/lib/utils';
-import { useRegions } from '@/hooks/useRestaurantSearch';
+import { useLocations, useArrondissements } from '@/hooks/useRestaurantSearch';
 
 interface FiltersProps {
   filters: FilterState;
@@ -27,20 +27,46 @@ const TYPES: { value: RestaurantType; label: string; emoji: string }[] = [
   { value: 'pub', label: 'Pubs', emoji: '🍻' },
 ];
 
+// Les 10 plus grandes villes de France par ordre de population
+const TOP_LOCATIONS = [
+  'Paris',
+  'Marseille',
+  'Lyon',
+  'Toulouse',
+  'Nice',
+  'Nantes',
+  'Montpellier',
+  'Strasbourg',
+  'Bordeaux',
+  'Lille'
+];
+
 export default function Filters({ filters, onFilterChange, restaurants, totalCount }: FiltersProps) {
-  const { data: regions = [] } = useRegions();
+  const { data: locations = [] } = useLocations();
+  const { data: allArrondissements = [] } = useArrondissements();
   const [showFilters, setShowFilters] = useState(false);
+
+  // Séparer les grandes villes du reste
+  const topLocationsAvailable = TOP_LOCATIONS.filter(loc => locations.includes(loc));
+  const otherLocations = locations.filter(loc => !TOP_LOCATIONS.includes(loc));
+
+  // Filtrer les arrondissements pour la localisation sélectionnée
+  const filteredArrondissements = filters.location 
+    ? allArrondissements.filter(arr => arr.startsWith(filters.location + ' '))
+    : [];
 
   const handleTypeChange = (type: RestaurantType) => {
     onFilterChange({ ...filters, type });
   };
 
-  const handleRegionChange = (region: string) => {
-    onFilterChange({ ...filters, region, department: '' });
+  const handleLocationChange = (location: string) => {
+    // Si on sélectionne une localisation, on désélectionne l'arrondissement
+    onFilterChange({ ...filters, location, arrondissement: '' });
   };
 
-  const handleDepartmentChange = (department: string) => {
-    onFilterChange({ ...filters, department });
+  const handleArrondissementChange = (arrondissement: string) => {
+    // Si on sélectionne un arrondissement, on garde la localisation pour le contexte
+    onFilterChange({ ...filters, arrondissement });
   };
 
   const handleLimitChange = (limitStr: string) => {
@@ -57,7 +83,7 @@ export default function Filters({ filters, onFilterChange, restaurants, totalCou
   };
 
   const handleReset = () => {
-    onFilterChange({ type: '', region: '', department: '', limit: 5000, sortBy: 'none' });
+    onFilterChange({ type: '', location: '', arrondissement: '', limit: 5000, sortBy: 'none' });
   };
 
   return (
@@ -108,39 +134,61 @@ export default function Filters({ filters, onFilterChange, restaurants, totalCou
           </div>
         </div>
 
-        {/* Région, Département, Tri et Limite */}
+        {/* Localisation, Arrondissement, Tri et Limite */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-3">
           <div>
-            <label htmlFor="region" className="block text-xs font-medium mb-2" style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
-              Région
+            <label htmlFor="location" className="block text-xs font-medium mb-2" style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
+              Ville / Département
             </label>
             <select
-              id="region"
-              value={filters.region}
-              onChange={(e) => handleRegionChange(e.target.value)}
+              id="location"
+              value={filters.location || ''}
+              onChange={(e) => handleLocationChange(e.target.value)}
               className="select"
             >
-              <option value="">Toutes les régions</option>
-              {regions.map((region) => (
-                <option key={region} value={region}>
-                  {region}
+              <option value="">Toutes les localisations</option>
+              {topLocationsAvailable.length > 0 && (
+                <>
+                  {topLocationsAvailable.map((location) => (
+                    <option key={location} value={location}>
+                      🏙️ {location}
+                    </option>
+                  ))}
+                  <option disabled>──────────</option>
+                </>
+              )}
+              {otherLocations.map((location) => (
+                <option key={location} value={location}>
+                  {location}
                 </option>
               ))}
             </select>
           </div>
 
           <div>
-            <label htmlFor="department" className="block text-xs font-medium mb-2" style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
-              Département
+            <label htmlFor="arrondissement" className="block text-xs font-medium mb-2" style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
+              Arrondissement
             </label>
-            <input
-              type="text"
-              id="department"
-              value={filters.department}
-              onChange={(e) => handleDepartmentChange(e.target.value)}
-              placeholder="Ex: Paris, Bouches-du-Rhône"
-              className="input"
-            />
+            <select
+              id="arrondissement"
+              value={filters.arrondissement || ''}
+              onChange={(e) => handleArrondissementChange(e.target.value)}
+              className="select"
+              disabled={!filters.location || filteredArrondissements.length === 0}
+            >
+              <option value="">
+                {!filters.location 
+                  ? 'Sélectionnez d\'abord une ville' 
+                  : filteredArrondissements.length === 0 
+                    ? 'Pas d\'arrondissements'
+                    : 'Tous les arrondissements'}
+              </option>
+              {filteredArrondissements.map((arr) => (
+                <option key={arr} value={arr}>
+                  {arr.replace(filters.location + ' ', '')}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>

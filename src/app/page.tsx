@@ -20,8 +20,8 @@ export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<FilterState>({
     type: 'restaurant',
-    region: '', 
-    department: 'Paris', // Par défaut : Paris
+    location: 'Paris', 
+    arrondissement: '', // Par défaut : vide
     limit: 500, // Limite par défaut
     sortBy: "distance", // Tri par défaut
   });
@@ -56,8 +56,8 @@ export default function HomePage() {
   } = useRestaurantSearch({
     searchTerm,
     type: filters.type,
-    region: filters.region,
-    department: filters.department,
+    location: filters.location,
+    arrondissement: filters.arrondissement,
     limit: filters.limit ?? 5000,
     sortBy: filters.sortBy,
     userLat: userLocation?.lat,
@@ -232,7 +232,7 @@ export default function HomePage() {
       {/*</footer>*/}
 
       {/* Bouton de mise à jour de la base */}
-      {/*<UpdateButton />*/}
+      <UpdateButton />
     </div>
   );
 }

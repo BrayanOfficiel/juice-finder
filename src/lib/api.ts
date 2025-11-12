@@ -14,8 +14,8 @@ export async function fetchRestaurants(params: SearchParams): Promise<ApiRespons
     
     if (params.searchTerm) queryParams.append('search', params.searchTerm);
     if (params.type) queryParams.append('type', params.type);
-    if (params.region) queryParams.append('region', params.region);
-    if (params.department) queryParams.append('department', params.department);
+    if (params.location) queryParams.append('location', params.location);
+    if (params.arrondissement) queryParams.append('arrondissement', params.arrondissement);
     if (params.limit) queryParams.append('limit', params.limit.toString());
     if (params.offset) queryParams.append('offset', params.offset.toString());
     if (params.sortBy) queryParams.append('sortBy', params.sortBy);
@@ -62,24 +62,51 @@ export async function fetchRegions(): Promise<string[]> {
 }
 
 /**
- * Récupère les départements disponibles pour une région
+ * Récupère les localisations disponibles (villes + départements fusionnés) depuis notre API interne
  */
-export async function fetchDepartments(region?: string): Promise<string[]> {
+export async function fetchLocations(): Promise<string[]> {
   try {
-    const queryParams = new URLSearchParams();
-    if (region) queryParams.append('region', region);
-    
-    const response = await axios.get(`/api/restaurants?${queryParams.toString()}`);
-    
-    // Extraction des départements uniques
-    const departments = new Set<string>();
-    response.data.results.forEach((restaurant: { department?: string }) => {
-      if (restaurant.department) {
-        departments.add(restaurant.department);
-      }
-    });
-    
-    return Array.from(departments).sort();
+    const response = await axios.get('/api/locations');
+    return response.data.locations || [];
+  } catch (error) {
+    console.error('Erreur lors de la récupération des localisations:', error);
+    return [];
+  }
+}
+
+/**
+ * Récupère les arrondissements disponibles depuis notre API interne
+ */
+export async function fetchArrondissements(): Promise<string[]> {
+  try {
+    const response = await axios.get('/api/arrondissements');
+    return response.data.arrondissements || [];
+  } catch (error) {
+    console.error('Erreur lors de la récupération des arrondissements:', error);
+    return [];
+  }
+}
+
+/**
+ * Récupère les villes disponibles depuis notre API interne
+ */
+export async function fetchCities(): Promise<string[]> {
+  try {
+    const response = await axios.get('/api/cities');
+    return response.data.cities || [];
+  } catch (error) {
+    console.error('Erreur lors de la récupération des villes:', error);
+    return [];
+  }
+}
+
+/**
+ * Récupère les départements disponibles depuis notre API interne
+ */
+export async function fetchDepartments(): Promise<string[]> {
+  try {
+    const response = await axios.get('/api/departments');
+    return response.data.departments || [];
   } catch (error) {
     console.error('Erreur lors de la récupération des départements:', error);
     return [];

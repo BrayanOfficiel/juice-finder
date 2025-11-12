@@ -1,0 +1,16 @@
+-- AlterTable
+ALTER TABLE `restaurants` MODIFY `type` VARCHAR(500) NULL,
+    MODIFY `phone` VARCHAR(500) NULL,
+    MODIFY `housenumber` VARCHAR(500) NULL,
+    MODIFY `postcode` VARCHAR(500) NULL,
+    MODIFY `city` VARCHAR(500) NULL,
+    MODIFY `department` VARCHAR(500) NULL,
+    MODIFY `region` VARCHAR(500) NULL,
+    MODIFY `meta_osm_id` VARCHAR(500) NULL,
+    MODIFY `meta_osm_type` VARCHAR(500) NULL,
+    MODIFY `osm_id` VARCHAR(500) NULL,
+    MODIFY `osm_type` VARCHAR(500) NULL,
+    MODIFY `wheelchair` VARCHAR(500) NULL,
+    MODIFY `delivery` VARCHAR(500) NULL,
+    MODIFY `takeaway` VARCHAR(500) NULL,
+    MODIFY `outdoor_seating` VARCHAR(500) NULL;

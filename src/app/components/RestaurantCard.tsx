@@ -103,9 +103,9 @@ export default function RestaurantCard({
               title="Copier le numéro"
             >
               {copied ? (
-                <FontAwesomeIcon icon={faCopy} className="h-6 w-6 icon-accent" />
+                <FontAwesomeIcon icon={faCopy} className="h-5 w-5 icon-accent" />
               ) : (
-                <FontAwesomeIcon icon={faCopy} className="h-6 w-6 icon-light" />
+                <FontAwesomeIcon icon={faCopy} className="h-5 w-5 icon-light" />
               )}
             </button>
             <button
@@ -116,7 +116,7 @@ export default function RestaurantCard({
               className="restaurant-card__icon-btn restaurant-card__icon-btn--call action-btn-dark action-btn-dark--call"
               title="Appeler"
             >
-              <FontAwesomeIcon icon={faPhone} className="h-6 w-6 icon-light" />
+              <FontAwesomeIcon icon={faPhone} className="h-5 w-5 icon-light" />
             </button>
           </div>
         </div>

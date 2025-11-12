@@ -158,12 +158,6 @@ export default function UpdateButton() {
           {/*  ADMIN ONLY*/}
         {!isUpdating && !stats && !error && (
           <div className="update-panel__info">
-            <p>
-              Synchronise tous les restaurants depuis OpenDataSoft.
-            </p>
-            <p className="mt-1">
-              Durée estimée : 2-3 minutes
-            </p>
             <div className="mt-2 space-y-1">
               <button
                 onClick={handleCleanup}

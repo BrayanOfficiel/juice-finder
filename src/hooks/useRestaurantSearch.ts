@@ -5,7 +5,7 @@
 'use client';
 
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
-import { fetchRestaurants, fetchRegions, fetchDepartments } from '@/lib/api';
+import { fetchRestaurants, fetchRegions, fetchDepartments, fetchCities, fetchLocations, fetchArrondissements } from '@/lib/api';
 import type { SearchParams, ApiResponse } from '@/lib/types';
 
 /**
@@ -79,14 +79,49 @@ export function useRegions() {
 }
 
 /**
- * Hook pour récupérer les départements d'une région
+ * Hook pour récupérer la liste des localisations (villes + départements)
  */
-export function useDepartments(region?: string) {
+export function useLocations() {
   return useQuery<string[], Error>({
-    queryKey: ['departments', region],
-    queryFn: () => fetchDepartments(region),
+    queryKey: ['locations'],
+    queryFn: fetchLocations,
     staleTime: 1000 * 60 * 60, // Cache de 1 heure
-    enabled: !!region, // Ne s'exécute que si une région est sélectionnée
+    retry: 2,
+  });
+}
+
+/**
+ * Hook pour récupérer la liste des arrondissements
+ */
+export function useArrondissements() {
+  return useQuery<string[], Error>({
+    queryKey: ['arrondissements'],
+    queryFn: fetchArrondissements,
+    staleTime: 1000 * 60 * 60, // Cache de 1 heure
+    retry: 2,
+  });
+}
+
+/**
+ * Hook pour récupérer la liste des villes
+ */
+export function useCities() {
+  return useQuery<string[], Error>({
+    queryKey: ['cities'],
+    queryFn: fetchCities,
+    staleTime: 1000 * 60 * 60, // Cache de 1 heure
+    retry: 2,
+  });
+}
+
+/**
+ * Hook pour récupérer la liste des départements
+ */
+export function useDepartments() {
+  return useQuery<string[], Error>({
+    queryKey: ['departments'],
+    queryFn: fetchDepartments,
+    staleTime: 1000 * 60 * 60, // Cache de 1 heure
     retry: 2,
   });
 }

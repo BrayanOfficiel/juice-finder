@@ -7,47 +7,47 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url      = env("BDD_POSTGRES_URL")
 }
 
 model Restaurant {
-  id              Int       @id @default(autoincrement())
-  name            String?   @db.VarChar(500)
-  type            String?   @db.VarChar(100)
-  phone           String?   @db.VarChar(50)
-  website         String?   @db.VarChar(500)
-  email           String?   @db.VarChar(255)
-  cuisine         String?   @db.VarChar(200)
-  
+  id      Int     @id @default(autoincrement())
+  name    String? @db.VarChar(500)
+  type    String? @db.VarChar(500)
+  phone   String? @db.VarChar(500)
+  website String? @db.VarChar(500)
+  email   String? @db.VarChar(500)
+  cuisine String? @db.VarChar(500)
+
   // Adresse
-  street          String?   @db.VarChar(500)
-  housenumber     String?   @db.VarChar(50)
-  postcode        String?   @db.VarChar(20)
-  city            String?   @db.VarChar(255)
-  department      String?   @db.VarChar(255)
-  region          String?   @db.VarChar(255)
-  
+  street      String? @db.VarChar(500)
+  housenumber String? @db.VarChar(500)
+  postcode    String? @db.VarChar(500)
+  city        String? @db.VarChar(500)
+  department  String? @db.VarChar(500)
+  region      String? @db.VarChar(500)
+
   // Coordonnées géographiques
-  lat             Float?
-  lon             Float?
-  
+  lat Float?
+  lon Float?
+
   // Métadonnées
-  meta_osm_id     String?   @unique @db.VarChar(100)
-  meta_osm_type   String?   @db.VarChar(50)
-  osm_id          String?   @db.VarChar(100)
-  osm_type        String?   @db.VarChar(50)
-  
+  meta_osm_id   String? @unique @db.VarChar(500)
+  meta_osm_type String? @db.VarChar(500)
+  osm_id        String? @db.VarChar(500)
+  osm_type      String? @db.VarChar(500)
+
   // Informations supplémentaires
-  opening_hours   String?   @db.Text
-  wheelchair      String?   @db.VarChar(20)
-  delivery        String?   @db.VarChar(20)
-  takeaway        String?   @db.VarChar(20)
-  outdoor_seating String?   @db.VarChar(20)
-  
+  opening_hours   String? @db.Text
+  wheelchair      String? @db.VarChar(500)
+  delivery        String? @db.VarChar(500)
+  takeaway        String? @db.VarChar(500)
+  outdoor_seating String? @db.VarChar(500)
+
   // Dates de suivi
-  last_update     DateTime? @default(now())
-  created_at      DateTime  @default(now())
-  
+  last_update DateTime? @default(now())
+  created_at  DateTime  @default(now())
+
   @@index([type])
   @@index([region])
   @@index([department])
@@ -55,4 +55,3 @@ model Restaurant {
   @@index([name])
   @@map("restaurants")
 }
-

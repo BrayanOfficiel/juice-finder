@@ -96,7 +96,7 @@ a {
 .link-plain:hover { color: lighten($color-primary,15%); }
 .link-accent { color: $color-primary; text-decoration: none; font-weight:$font-weight-medium; }
 .link-accent:hover { color: lighten($color-primary,10%); text-decoration: underline; }
-.icon-light { color: var(--color-text); }
+.icon-light { color: var(--color-text); padding: 3px; }
 .icon-muted { color: rgba(255,255,255,0.6); }
 .icon-accent { color: $color-primary; }
 .action-btn-dark { background:$color-surface-dark-3; color: var(--color-text); border:1px solid $color-surface-outline; border-radius:$border-radius-md; padding:.35rem .6rem; display:inline-flex; align-items:center; justify-content:center; transition:background $transition-fast,color $transition-fast,border-color $transition-fast; }
@@ -201,6 +201,7 @@ a {
 .card, .card-bordered, .restaurant-card, .update-panel {
   background-color: $color-white;
   color: $color-surface-text;
+  cursor: default;
 }
 
 .card {

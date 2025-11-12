@@ -40,8 +40,8 @@ export interface ApiResponse {
 export interface SearchParams {
   searchTerm?: string;
   type?: string;
-  region?: string;
-  department?: string;
+  location?: string; // Ville ou département
+  arrondissement?: string;
   limit?: number;
   offset?: number;
   sortBy?: string;
@@ -55,8 +55,8 @@ export type SortBy = 'distance' | 'name' | 'none';
 
 export interface FilterState {
   type: RestaurantType;
-  region: string;
-  department: string;
+  location?: string; // Ville ou département
+  arrondissement?: string;
   limit?: number; // Limite du nombre de résultats à récupérer (ex: 100/250/500/1000/2500/5000)
   sortBy?: SortBy; // Tri par distance ou nom
 }

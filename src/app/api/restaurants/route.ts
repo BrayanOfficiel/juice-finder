@@ -38,8 +38,8 @@ export async function GET(request: NextRequest) {
     // Paramètres de recherche
     const search = searchParams.get('search') || '';
     const type = searchParams.get('type') || '';
-    const region = searchParams.get('region') || '';
-    const department = searchParams.get('department') || '';
+    const location = searchParams.get('location') || '';
+    const arrondissement = searchParams.get('arrondissement') || '';
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = parseInt(searchParams.get('offset') || '0');
     const sortBy = searchParams.get('sortBy') || 'none';
@@ -47,12 +47,7 @@ export async function GET(request: NextRequest) {
     const userLon = parseFloat(searchParams.get('userLon') || '0');
     
     // Construction de la requête WHERE
-    const where: {
-      name?: { contains: string } | { not: null };
-      type?: string;
-      region?: string;
-      department?: string;
-    } = {};
+    const where: Record<string, unknown> = {};
     
     // TOUJOURS exclure les restaurants sans nom
     where.name = search 
@@ -64,14 +59,17 @@ export async function GET(request: NextRequest) {
       where.type = type;
     }
     
-    // Filtre par région
-    if (region) {
-      where.region = region;
+    // Filtre par localisation (ville OU département)
+    if (location) {
+      where.OR = [
+        { city: location },
+        { department: location }
+      ];
     }
     
-    // Filtre par département (égalité exacte pour MySQL)
-    if (department) {
-      where.department = department;
+    // Filtre par arrondissement (maintenant c'est un nom de ville complet: "Paris 1er Arrondissement")
+    if (arrondissement) {
+      where.city = arrondissement;
     }
     
     // Récupération des données avec pagination
@@ -82,7 +80,7 @@ export async function GET(request: NextRequest) {
     if (sortBy === 'distance' && userLat !== 0 && userLon !== 0) {
       // Construction de la clause WHERE pour SQL brut
       let whereClause = 'WHERE name IS NOT NULL';
-      const queryParams: any[] = [];
+      const queryParams: (string | number)[] = [];
       
       if (search) {
         whereClause += ' AND name LIKE ?';
@@ -92,13 +90,13 @@ export async function GET(request: NextRequest) {
         whereClause += ' AND type = ?';
         queryParams.push(type);
       }
-      if (region) {
-        whereClause += ' AND region = ?';
-        queryParams.push(region);
+      if (location) {
+        whereClause += ' AND (city = ? OR department = ?)';
+        queryParams.push(location, location);
       }
-      if (department) {
-        whereClause += ' AND department = ?';
-        queryParams.push(department);
+      if (arrondissement) {
+        whereClause += ' AND city = ?';
+        queryParams.push(arrondissement);
       }
       
       // Calcul de la distance avec la formule Haversine (version simplifiée)
@@ -130,13 +128,13 @@ export async function GET(request: NextRequest) {
       `;
       
       try {
-        const [restaurantsResult, countResult]: any = await Promise.all([
+        const results = await Promise.all([
           prisma.$queryRawUnsafe(query, ...queryParams),
           prisma.$queryRawUnsafe(countQuery, ...queryParams),
         ]);
 
-        restaurants = restaurantsResult;
-        totalCount = Number(countResult[0]?.count) || 0;
+        restaurants = results[0] as RestaurantRow[];
+        totalCount = Number((results[1] as Array<{ count: bigint }>)[0]?.count) || 0;
       } catch (error) {
         console.error('Erreur requête SQL distance:', error);
         throw error;
