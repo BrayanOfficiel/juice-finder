@@ -6,7 +6,18 @@
 
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faDownload, faRotateRight, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
+import { 
+  faChevronDown, 
+  faDownload, 
+  faRotateRight, 
+  faCircleInfo,
+  faUtensils,
+  faBurger,
+  faMugHot,
+  faBeerMugEmpty,
+  faWineGlass
+} from '@fortawesome/free-solid-svg-icons';
 import type { RestaurantType, FilterState, Restaurant } from '@/lib/types';
 import { exportToCSV } from '@/lib/utils';
 import { useLocations, useArrondissements } from '@/hooks/useRestaurantSearch';
@@ -18,13 +29,13 @@ interface FiltersProps {
   totalCount: number;
 }
 
-const TYPES: { value: RestaurantType; label: string; emoji: string }[] = [
-  { value: '', label: 'Tous', emoji: '🍽️' },
-  { value: 'restaurant', label: 'Restaurants', emoji: '🍴' },
-  { value: 'bar', label: 'Bars', emoji: '🍺' },
-  { value: 'cafe', label: 'Cafés', emoji: '☕' },
-  { value: 'fast_food', label: 'Fast Food', emoji: '🍔' },
-  { value: 'pub', label: 'Pubs', emoji: '🍻' },
+const TYPES: { value: RestaurantType; label: string; icon: IconDefinition }[] = [
+  { value: '', label: 'Tous', icon: faUtensils },
+  { value: 'restaurant', label: 'Restaurants', icon: faUtensils },
+  { value: 'bar', label: 'Bars', icon: faWineGlass },
+  { value: 'cafe', label: 'Cafés', icon: faMugHot },
+  { value: 'fast_food', label: 'Fast Food', icon: faBurger },
+  { value: 'pub', label: 'Pubs', icon: faBeerMugEmpty },
 ];
 
 // Les 10 plus grandes villes de France par ordre de population
@@ -59,12 +70,6 @@ export default function Filters({ filters, onFilterChange, restaurants, totalCou
   // Séparer les grandes villes du reste
   const topLocationsAvailable = TOP_LOCATIONS.filter(loc => locations.includes(loc));
   const otherLocations = locations.filter(loc => !TOP_LOCATIONS.includes(loc));
-
-  // Départements à afficher avec une icône différente
-  const departments = [
-    'Marseille (Bouches-du-Rhône)', 'Rhône', 'Haute-Garonne', 'Alpes-Maritimes',
-    'Loire-Atlantique', 'Hérault', 'Bas-Rhin', 'Gironde', 'Nord'
-  ];
   
   // Filtrer les arrondissements pour la localisation sélectionnée
   const filteredArrondissements = filters.location 
@@ -143,7 +148,7 @@ export default function Filters({ filters, onFilterChange, restaurants, totalCou
                   borderColor: filters.type === type.value ? 'var(--color-primary)' : 'var(--color-surface-outline)'
                 }}
               >
-                <span className="mr-1">{type.emoji}</span>
+                <FontAwesomeIcon icon={type.icon} className="mr-2" />
                 {type.label}
               </button>
             ))}

@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { Restaurant } from '@/lib/types';
-import { translateType, formatAddress, formatPhoneNumber } from '@/lib/utils';
+import {translateType, formatAddress, formatPhoneNumber, getGoogleMapsLink} from '@/lib/utils';
 
 interface MapViewProps {
   restaurants: Restaurant[];
@@ -40,13 +40,16 @@ export default function MapView({
       zoom: 5.5,
     });
 
-    map.current.on('error', (e) => {
+    map.current.on('error', (e: maplibregl.ErrorEvent) => {
       // Si une erreur de style survient, basculer en fallback clair
       try {
-        if (map.current && (e as any)?.error?.sourceID) {
+        if (map.current && e?.error) {
+          console.warn('Erreur de style de carte, basculement en mode clair', e.error);
           map.current.setStyle(LIGHT_FALLBACK);
         }
-      } catch {}
+      } catch (err) {
+        console.error('Erreur lors du changement de style:', err);
+      }
     });
 
     map.current.addControl(new maplibregl.NavigationControl(), 'top-right');
@@ -92,44 +95,72 @@ export default function MapView({
       el.style.height = '32px';
       el.style.cursor = 'pointer';
       
-      // Icône selon le type
-      const getIcon = (type: string) => {
+      // Icône selon le type (utilise Font Awesome via CSS)
+      const getIconClass = (type: string) => {
         switch(type) {
-          case 'restaurant': return '🍴';
-          case 'bar': return '🍺';
-          case 'cafe': return '☕';
-          case 'fast_food': return '🍔';
-          case 'pub': return '🍻';
-          default: return '📍';
+          case 'restaurant': return 'fa-solid fa-utensils';
+          case 'bar': return 'fa-solid fa-wine-glass';
+          case 'cafe': return 'fa-solid fa-mug-hot';
+          case 'fast_food': return 'fa-solid fa-burger';
+          case 'pub': return 'fa-solid fa-beer-mug-empty';
+          default: return 'fa-solid fa-location-dot';
         }
       };
       
-      el.innerHTML = `<div style="font-size: 24px; text-align: center; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">${getIcon(restaurant.type)}</div>`;
+      const getIconColor = (type: string) => {
+        switch(type) {
+          case 'restaurant': return '#f59e0b';
+          case 'bar': return '#8b5cf6';
+          case 'cafe': return '#6366f1';
+          case 'fast_food': return '#ef4444';
+          case 'pub': return '#10b981';
+          default: return '#3b82f6';
+        }
+      };
+      
+      el.innerHTML = `<div style="font-size: 20px; text-align: center; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"><i class="${getIconClass(restaurant.type)}" style="color: ${getIconColor(restaurant.type)};"></i></div>`;
 
       // Popup
+      const googleMapsUrl = getGoogleMapsLink(restaurant);
+      const phoneHref = restaurant.phone ? `tel:${restaurant.phone.replace(/\s/g, '')}` : '';
       const popupContent = `
-        <div style="min-width: 200px;">
+        <div style="min-width: 200px; font-family: system-ui, -apple-system, sans-serif;">
           <h3 style="font-weight: 600; font-size: 14px; margin: 0 0 8px 0; color: #111;">
             ${restaurant.name || 'Sans nom'}
           </h3>
           <p style="font-size: 12px; color: #6b7280; margin: 4px 0;">
-            ${translateType(restaurant.type)}
-          </p>
-          ${restaurant.street || restaurant.city ? `
-            <p style="font-size: 12px; color: #6b7280; margin: 4px 0;">
-              📍 ${formatAddress(restaurant)}
-            </p>
+            ${translateType(restaurant.type)} ${restaurant.street || restaurant.city ? `à ${formatAddress(restaurant)}
           ` : ''}
+          </p>
+          
           ${restaurant.phone ? `
-            <p style="font-size: 12px; color: #6b7280; margin: 4px 0;">
-              📞 ${formatPhoneNumber(restaurant.phone)}
-            </p>
+            <a 
+              href="${phoneHref}" 
+              style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; width: 100%; padding: 8px 12px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 500; text-decoration: none; transition: background 0.2s;"
+              onmouseover="this.style.background='#059669'"
+              onmouseout="this.style.background='#10b981'"
+            >
+              <i class="fa-solid fa-phone"></i>
+              <span>Appeler ${formatPhoneNumber(restaurant.phone)}</span>
+            </a>
+          ` : ''}
+          ${googleMapsUrl ? `
+            <a 
+              href="${googleMapsUrl}" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; width: 100%; padding: 6px 12px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 500; text-align: center; text-decoration: none;"
+            >
+              <i class="fa-solid fa-map-location-dot"></i>
+              <span>Ouvrir dans Google Maps</span>
+            </a>
           ` : ''}
           <button 
-            onclick="window.selectRestaurant('${restaurant.id || restaurant.name}')"
-            style="margin-top: 8px; width: 100%; padding: 6px 12px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 500;"
+            onclick="window.selectRestaurant('${(restaurant.id || restaurant.name || '').replace(/'/g, "\\'")}')"
+            style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; width: 100%; padding: 6px 12px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 500;"
           >
-            Voir les détails
+            <i class="fa-solid fa-circle-info"></i>
+            <span>Zoomer</span>
           </button>
         </div>
       `;
@@ -194,8 +225,11 @@ export default function MapView({
 
   // Fonction globale pour la sélection depuis le popup
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).selectRestaurant = (id: string) => {
+    interface WindowWithSelectRestaurant extends Window {
+      selectRestaurant?: (id: string) => void;
+    }
+    
+    (window as WindowWithSelectRestaurant).selectRestaurant = (id: string) => {
       const restaurant = restaurants.find(r => (r.id || r.name) === id);
       if (restaurant) {
         onRestaurantSelect(restaurant);
@@ -203,8 +237,7 @@ export default function MapView({
     };
 
     return () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      delete (window as any).selectRestaurant;
+      delete (window as WindowWithSelectRestaurant).selectRestaurant;
     };
   }, [restaurants, onRestaurantSelect]);
 
@@ -220,10 +253,11 @@ export default function MapView({
       {/* Compteur */}
       {restaurants.length > 0 && (
         <div className="absolute top-2 left-2 dark-surface-2 px-3 py-2 rounded-lg shadow-md" style={{opacity:.95}}>
-          <p className="text-sm font-medium" style={{color:'var(--color-text)'}}>
-             📍 {restaurants.filter(r => r.meta_geo_point).length} établissement{restaurants.filter(r => r.meta_geo_point).length > 1 ? 's' : ''}
-           </p>
-         </div>
+          <p className="text-sm font-medium flex items-center gap-2" style={{color:'var(--color-text)'}}>
+            <i className="fa-solid fa-location-dot"></i>
+            <span>{restaurants.filter(r => r.meta_geo_point).length} établissement{restaurants.filter(r => r.meta_geo_point).length > 1 ? 's' : ''}</span>
+          </p>
+        </div>
       )}
     </div>
   );

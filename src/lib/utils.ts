@@ -46,8 +46,8 @@ export function formatAddress(restaurant: Restaurant): string {
     const street = parts.join(' ');
     const cityParts = [];
 
-    if (restaurant.postcode) cityParts.push(restaurant.postcode);
     if (restaurant.city) cityParts.push(restaurant.city);
+    if (restaurant.postcode) cityParts.push(restaurant.postcode);
 
     const city = cityParts.join(' ');
 
