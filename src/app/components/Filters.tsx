@@ -28,17 +28,27 @@ const TYPES: { value: RestaurantType; label: string; emoji: string }[] = [
 ];
 
 // Les 10 plus grandes villes de France par ordre de population
+// + leurs départements car certaines n'apparaissent que comme département
 const TOP_LOCATIONS = [
   'Paris',
   'Marseille',
+  'Bouches-du-Rhône', // Pour Marseille
   'Lyon',
+  'Rhône', // Pour Lyon
   'Toulouse',
+  'Haute-Garonne', // Pour Toulouse
   'Nice',
+  'Alpes-Maritimes', // Pour Nice
   'Nantes',
+  'Loire-Atlantique', // Pour Nantes
   'Montpellier',
+  'Hérault', // Pour Montpellier
   'Strasbourg',
+  'Bas-Rhin', // Pour Strasbourg
   'Bordeaux',
-  'Lille'
+  'Gironde', // Pour Bordeaux
+  'Lille',
+  'Nord', // Pour Lille
 ];
 
 export default function Filters({ filters, onFilterChange, restaurants, totalCount }: FiltersProps) {
@@ -50,6 +60,12 @@ export default function Filters({ filters, onFilterChange, restaurants, totalCou
   const topLocationsAvailable = TOP_LOCATIONS.filter(loc => locations.includes(loc));
   const otherLocations = locations.filter(loc => !TOP_LOCATIONS.includes(loc));
 
+  // Départements à afficher avec une icône différente
+  const departments = [
+    'Marseille (Bouches-du-Rhône)', 'Rhône', 'Haute-Garonne', 'Alpes-Maritimes',
+    'Loire-Atlantique', 'Hérault', 'Bas-Rhin', 'Gironde', 'Nord'
+  ];
+  
   // Filtrer les arrondissements pour la localisation sélectionnée
   const filteredArrondissements = filters.location 
     ? allArrondissements.filter(arr => arr.startsWith(filters.location + ' '))
@@ -151,7 +167,7 @@ export default function Filters({ filters, onFilterChange, restaurants, totalCou
                 <>
                   {topLocationsAvailable.map((location) => (
                     <option key={location} value={location}>
-                      🏙️ {location}
+                      {location}
                     </option>
                   ))}
                   <option disabled>──────────</option>
