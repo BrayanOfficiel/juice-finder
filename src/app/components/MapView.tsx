@@ -14,12 +14,16 @@ interface MapViewProps {
   restaurants: Restaurant[];
   selectedRestaurant?: Restaurant;
   onRestaurantSelect: (restaurant: Restaurant) => void;
+  archivedIds?: Set<string>;
+  showArchived?: boolean;
 }
 
 export default function MapView({ 
   restaurants, 
   selectedRestaurant,
-  onRestaurantSelect 
+  onRestaurantSelect,
+  archivedIds,
+  showArchived = true
 }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
@@ -80,7 +84,8 @@ export default function MapView({
     const validRestaurants = restaurants.filter(
       r => r.meta_geo_point && 
       !isNaN(r.meta_geo_point.lon) &&
-      !isNaN(r.meta_geo_point.lat)
+      !isNaN(r.meta_geo_point.lat) &&
+      (showArchived || !archivedIds?.has(String(r.id)))
     );
 
     if (validRestaurants.length === 0) return;
@@ -89,36 +94,7 @@ export default function MapView({
     validRestaurants.forEach(restaurant => {
       if (!restaurant.meta_geo_point) return;
 
-      const el = document.createElement('div');
-      el.className = 'custom-marker';
-      el.style.width = '32px';
-      el.style.height = '32px';
-      el.style.cursor = 'pointer';
-      
-      // Icône selon le type (utilise Font Awesome via CSS)
-      const getIconClass = (type: string) => {
-        switch(type) {
-          case 'restaurant': return 'fa-solid fa-utensils';
-          case 'bar': return 'fa-solid fa-wine-glass';
-          case 'cafe': return 'fa-solid fa-mug-hot';
-          case 'fast_food': return 'fa-solid fa-burger';
-          case 'pub': return 'fa-solid fa-beer-mug-empty';
-          default: return 'fa-solid fa-location-dot';
-        }
-      };
-      
-      const getIconColor = (type: string) => {
-        switch(type) {
-          case 'restaurant': return '#f59e0b';
-          case 'bar': return '#8b5cf6';
-          case 'cafe': return '#6366f1';
-          case 'fast_food': return '#ef4444';
-          case 'pub': return '#10b981';
-          default: return '#3b82f6';
-        }
-      };
-      
-      el.innerHTML = `<div style="font-size: 20px; text-align: center; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"><i class="${getIconClass(restaurant.type)}" style="color: ${getIconColor(restaurant.type)};"></i></div>`;
+      const isArchived = archivedIds?.has(String(restaurant.id)) ?? false;
 
       // Popup
       const googleMapsUrl = getGoogleMapsLink(restaurant);
@@ -132,55 +108,66 @@ export default function MapView({
             ${translateType(restaurant.type)} ${restaurant.street || restaurant.city ? `à ${formatAddress(restaurant)}
           ` : ''}
           </p>
-          
           ${restaurant.phone ? `
-            <a 
-              href="${phoneHref}" 
-              style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; width: 100%; padding: 8px 12px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 500; text-decoration: none; transition: background 0.2s;"
-              onmouseover="this.style.background='#059669'"
-              onmouseout="this.style.background='#10b981'"
-            >
-              <i class="fa-solid fa-phone"></i>
-              <span>Appeler ${formatPhoneNumber(restaurant.phone)}</span>
-            </a>
-          ` : ''}
+            <a href="${phoneHref}" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;width:100%;padding:8px 12px;background:#10b981;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-weight:500;text-decoration:none;transition:background .2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+              <i class='fa-solid fa-phone'></i><span>Appeler ${formatPhoneNumber(restaurant.phone)}</span>
+            </a>` : ''}
           ${googleMapsUrl ? `
-            <a 
-              href="${googleMapsUrl}" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; width: 100%; padding: 6px 12px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 500; text-align: center; text-decoration: none;"
-            >
-              <i class="fa-solid fa-map-location-dot"></i>
-              <span>Ouvrir dans Google Maps</span>
-            </a>
-          ` : ''}
-          <button 
-            onclick="window.selectRestaurant('${(restaurant.id || restaurant.name || '').replace(/'/g, "\\'")}')"
-            style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; width: 100%; padding: 6px 12px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 500;"
-          >
-            <i class="fa-solid fa-circle-info"></i>
-            <span>Zoomer</span>
+            <a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;width:100%;padding:6px 12px;background:#2563eb;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-weight:500;text-align:center;text-decoration:none;">
+              <i class='fa-solid fa-map-location-dot'></i><span>Ouvrir dans Google Maps</span>
+            </a>` : ''}
+          <button onclick="window.selectRestaurant('${(restaurant.id || restaurant.name || '').replace(/'/g, "\\'")}')" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;width:100%;padding:6px 12px;background:#2563eb;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-weight:500;">
+            <i class='fa-solid fa-circle-info'></i><span>Zoomer</span>
           </button>
         </div>
       `;
+      const popup = new maplibregl.Popup({ offset:25, closeButton:true, closeOnClick:false }).setHTML(popupContent);
 
-      const popup = new maplibregl.Popup({ 
-        offset: 25,
-        closeButton: true,
-        closeOnClick: false,
-      }).setHTML(popupContent);
-
-      const marker = new maplibregl.Marker(el)
-        .setLngLat([restaurant.meta_geo_point.lon, restaurant.meta_geo_point.lat])
-        .setPopup(popup)
-        .addTo(map.current!);
-
-      el.addEventListener('click', () => {
-        onRestaurantSelect(restaurant);
-      });
-
-      markers.current.push(marker);
+      if (isArchived) {
+        // Marqueur archivé : pin MapLibre jaune uniforme (fill = contour carte resto)
+        const marker = new maplibregl.Marker({ color: '#FCD34D' })
+          .setLngLat([restaurant.meta_geo_point.lon, restaurant.meta_geo_point.lat])
+          .setPopup(popup)
+          .addTo(map.current!);
+        marker.getElement().style.filter = 'drop-shadow(0 2px 4px rgba(0,0,0,0.35))';
+        marker.getElement().title = 'Archivé';
+        marker.getElement().addEventListener('click', () => onRestaurantSelect(restaurant));
+        markers.current.push(marker);
+      } else {
+        // Marqueur normal avec couleur selon type (HTML custom)
+        const el = document.createElement('div');
+        el.className = 'custom-marker';
+        el.style.width = '32px';
+        el.style.height = '32px';
+        el.style.cursor = 'pointer';
+        const getIconClass = (type: string) => {
+          switch(type) {
+            case 'restaurant': return 'fa-solid fa-utensils';
+            case 'bar': return 'fa-solid fa-wine-glass';
+            case 'cafe': return 'fa-solid fa-mug-hot';
+            case 'fast_food': return 'fa-solid fa-burger';
+            case 'pub': return 'fa-solid fa-beer-mug-empty';
+            default: return 'fa-solid fa-location-dot';
+          }
+        };
+        const getIconColor = (type: string) => {
+          switch(type) {
+            case 'restaurant': return '#f59e0b';
+            case 'bar': return '#8b5cf6';
+            case 'cafe': return '#6366f1';
+            case 'fast_food': return '#ef4444';
+            case 'pub': return '#10b981';
+            default: return '#3b82f6';
+          }
+        };
+        el.innerHTML = `<div style="font-size:20px;text-align:center;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));"><i class='${getIconClass(restaurant.type)}' style='color:${getIconColor(restaurant.type)};'></i></div>`;
+        const marker = new maplibregl.Marker(el)
+          .setLngLat([restaurant.meta_geo_point.lon, restaurant.meta_geo_point.lat])
+          .setPopup(popup)
+          .addTo(map.current!);
+        el.addEventListener('click', () => onRestaurantSelect(restaurant));
+        markers.current.push(marker);
+      }
     });
 
     // Ajuste la vue pour inclure tous les markers
@@ -198,7 +185,7 @@ export default function MapView({
         duration: 1000,
       });
     }
-  }, [restaurants, mapLoaded, onRestaurantSelect]);
+  }, [restaurants, mapLoaded, onRestaurantSelect, archivedIds, showArchived]);
 
   // Centre sur le restaurant sélectionné
   useEffect(() => {

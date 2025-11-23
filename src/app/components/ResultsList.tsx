@@ -21,6 +21,9 @@ interface ResultsListProps {
   selectedRestaurantId?: string;
   userLocation?: { lat: number; lon: number } | null;
   sortBy?: string;
+  archivedIds?: Set<string>;
+  onToggleArchived?: (restaurantId: string) => void;
+  showArchived?: boolean;
 }
 
 export default function ResultsList({
@@ -33,6 +36,9 @@ export default function ResultsList({
   selectedRestaurantId,
   userLocation,
   sortBy,
+  archivedIds,
+  onToggleArchived,
+  showArchived = true,
 }: ResultsListProps) {
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -104,7 +110,9 @@ export default function ResultsList({
 
       {/* Liste des résultats */}
       <div className="grid grid-cols-1 gap-4">
-        {restaurants.map((restaurant) => {
+        {restaurants
+          .filter(restaurant => showArchived || !archivedIds?.has(restaurant.id))
+          .map((restaurant) => {
           let distance: number | undefined;
           if (sortBy === 'distance' && userLocation && restaurant.meta_geo_point) {
             distance = calculateDistance(
@@ -115,6 +123,8 @@ export default function ResultsList({
             );
           }
           
+          const isArchived = archivedIds?.has(restaurant.id) ?? false;
+          
           return (
             <RestaurantCard
               key={restaurant.id || `${restaurant.name}-${restaurant.meta_geo_point?.lat}-${restaurant.meta_geo_point?.lon}`}
@@ -123,6 +133,8 @@ export default function ResultsList({
               isSelected={selectedRestaurantId === restaurant.id}
               distance={distance}
               showDistance={sortBy === 'distance'}
+              isArchived={isArchived}
+              onToggleArchived={onToggleArchived ? () => onToggleArchived(restaurant.id) : undefined}
             />
           );
         })}

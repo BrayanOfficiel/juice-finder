@@ -126,7 +126,7 @@
   border: 1px solid $color-gray-300;
   border-radius: $border-radius-md;
   font-size: $font-size-base;
-  color: $color-text;
+  color: $color-surface-text; // Texte foncé pour fond blanc
   background-color: $color-white;
   transition: all $transition-fast;
   outline: none;
@@ -142,7 +142,8 @@
   }
   
   &::placeholder {
-    color: $color-gray-400;
+    color: $color-gray-500;
+    opacity: 1;
   }
 }
 

@@ -6,11 +6,13 @@
 
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faLocationDot, 
-  faPhone, 
-  faCopy, 
-  faGlobe
+import {
+  faLocationDot,
+  faPhone,
+  faCopy,
+  faGlobe, 
+  faMapMarkerAlt,
+  faArchive
 } from '@fortawesome/free-solid-svg-icons';
 import type { Restaurant } from '@/lib/types';
 import { 
@@ -27,6 +29,8 @@ interface RestaurantCardProps {
   isSelected?: boolean;
   distance?: number;
   showDistance?: boolean;
+  isArchived?: boolean;
+  onToggleArchived?: () => void;
 }
 
 export default function RestaurantCard({ 
@@ -34,7 +38,9 @@ export default function RestaurantCard({
   onSelect, 
   isSelected = false,
   distance,
-  showDistance = false
+  showDistance = false,
+  isArchived = false,
+  onToggleArchived
 }: RestaurantCardProps) {
   const [copied, setCopied] = useState(false);
 
@@ -58,6 +64,10 @@ export default function RestaurantCard({
     <div
       onClick={onSelect}
       className={`restaurant-card restaurant-card--dark ${isSelected ? 'is-selected' : ''}`}
+      style={isArchived && !isSelected ? { 
+        outline: '1px solid #FCD34D',
+        boxShadow: '0 0 0 1px #FCD34D'
+      } : undefined}
     >
       {/* En-tête */}
       <div className="flex items-start justify-between mb-3">
@@ -73,11 +83,29 @@ export default function RestaurantCard({
               <span 
                 className="badge-green text-xs font-medium px-2 py-1"
               >
-                📍 {distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`}
+                <FontAwesomeIcon icon={faMapMarkerAlt} />
+                {distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`}
               </span>
             )}
           </div>
         </div>
+        {onToggleArchived && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleArchived();
+            }}
+            className="p-2 hover:color-secondary rounded-lg transition-colors"
+            title={isArchived ? 'Désarchiver' : 'Archiver'}
+            aria-label={isArchived ? 'Désarchiver' : 'Archiver'}
+          >
+            <FontAwesomeIcon 
+              icon={faArchive} 
+              className="h-5 w-5"
+              style={{ color: isArchived ? '#FCD34D' : '#9CA3AF' }}
+            />
+          </button>
+        )}
       </div>
 
       {/* Adresse */}
@@ -172,3 +200,4 @@ export default function RestaurantCard({
     </div>
   );
 }
+// Force reload

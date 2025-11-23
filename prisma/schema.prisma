@@ -48,10 +48,42 @@ model Restaurant {
   last_update DateTime? @default(now())
   created_at  DateTime  @default(now())
 
+  // Relations
+  archived ArchivedRestaurant[]
+
   @@index([type])
   @@index([region])
   @@index([department])
   @@index([city])
   @@index([name])
   @@map("restaurants")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique @db.VarChar(255)
+  password  String?  @db.VarChar(255) // Optionnel
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  archived ArchivedRestaurant[]
+
+  @@map("users")
+}
+
+model ArchivedRestaurant {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  restaurantId Int
+  createdAt    DateTime @default(now())
+
+  // Relations
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, restaurantId])
+  @@index([userId])
+  @@index([restaurantId])
+  @@map("archived_restaurants")
 }

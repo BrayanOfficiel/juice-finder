@@ -4,19 +4,22 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import Image from "next/image";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCircleXmark } from '@fortawesome/free-solid-svg-icons';
+import { faCircleXmark, faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import SearchBar from './components/SearchBar';
 import Filters from './components/Filters';
 import MapView from './components/MapView';
 import ResultsList from './components/ResultsList';
 import UpdateButton from './components/UpdateButton';
+import UserSelection from './components/UserSelection';
 import { useRestaurantSearch } from '@/hooks/useRestaurantSearch';
+import { useAuth } from '@/contexts/AuthContext';
 import type { FilterState, Restaurant } from '@/lib/types';
 
 export default function HomePage() {
+  const { user, isAuthenticated, login, logout } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<FilterState>({
     type: 'restaurant',
@@ -27,6 +30,9 @@ export default function HomePage() {
   });
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | undefined>();
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
+  const [archivedIds, setArchivedIds] = useState<Set<string>>(new Set());
+  const [showArchived, setShowArchived] = useState(true); // Afficher les archivés par défaut
+
   // Géolocalisation de l'utilisateur
   useEffect(() => {
     if (navigator.geolocation) {
@@ -43,6 +49,75 @@ export default function HomePage() {
       );
     }
   }, []);
+
+  // Charger les restaurants archivés de l'utilisateur
+  const fetchArchived = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      const response = await fetch('/api/archived', {
+        headers: {
+          'x-user-id': user.id.toString(),
+        },
+      });
+      
+      if (response.ok) {
+        const archived = await response.json();
+        const ids = new Set<string>(archived.map((a: { restaurantId: number }) => a.restaurantId.toString()));
+        setArchivedIds(ids);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des restaurants archivés:', error);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchArchived();
+    }
+  }, [user, fetchArchived]);
+
+  const toggleArchived = async (restaurantId: string) => {
+    if (!user) return;
+
+    const isArchived = archivedIds.has(restaurantId);
+
+    try {
+      if (isArchived) {
+        // Désarchiver le restaurant
+        const response = await fetch(`/api/archived?restaurantId=${restaurantId}`, {
+          method: 'DELETE',
+          headers: {
+            'x-user-id': user.id.toString(),
+          },
+        });
+
+        if (response.ok) {
+          setArchivedIds(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(restaurantId);
+            return newSet;
+          });
+        }
+      } else {
+        // Archiver le restaurant
+        const response = await fetch('/api/archived', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-id': user.id.toString(),
+          },
+          body: JSON.stringify({ restaurantId }),
+        });
+
+        if (response.ok) {
+          setArchivedIds(prev => new Set(prev).add(restaurantId));
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors de la gestion de l\'archivage:', error);
+    }
+  };
 
   // Hook de recherche avec TanStack Query
   const {
@@ -84,6 +159,11 @@ export default function HomePage() {
     }
   };
 
+  // Si l'utilisateur n'est pas authentifié, afficher l'écran de sélection
+  if (!isAuthenticated) {
+    return <UserSelection onUserSelected={login} />;
+  }
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       {/* Lien d'évitement pour l'accessibilité */}
@@ -94,8 +174,9 @@ export default function HomePage() {
       {/* Header */}
       <header role="banner" className="header-gradient header-gradient-border sticky top-0 z-40">
         <div className="container py-4">
-          <div className="flex items-center justify-center mb-4">
-            <div>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex-1"></div>
+            <div className="flex-1 flex justify-center">
               <h1 className="text-2xl lg:text-3xl font-bold flex items-center" style={{ color: 'var(--color-text)' }}>
                 <Image 
                   src="/assets/img/juice@4x.png" 
@@ -106,6 +187,22 @@ export default function HomePage() {
                 />
                 <span className="logo-finder">FINDER</span>
               </h1>
+            </div>
+            <div className="flex-1 flex justify-end items-center gap-3">
+              <div className="text-sm" style={{ color: '#F5FBFF' }}>
+                <span className="font-medium">{user?.username}</span>
+              </div>
+              <button
+                onClick={logout}
+                className="p-2 transition-colors"
+                style={{ color: '#F5FBFF' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = '#2853FE'}
+                onMouseLeave={(e) => e.currentTarget.style.color = '#F5FBFF'}
+                title="Se déconnecter"
+                aria-label="Se déconnecter"
+              >
+                <FontAwesomeIcon icon={faRightFromBracket} className="h-5 w-5" />
+              </button>
             </div>
           </div>
           {/* Barre de recherche */}
@@ -121,12 +218,24 @@ export default function HomePage() {
           {/* Filtres */}
           <section aria-labelledby="filtres-titre" className="mb-6">
             <h2 id="filtres-titre" className="sr-only">Filtres</h2>
-            <Filters
-              filters={filters}
-              onFilterChange={setFilters}
-              restaurants={allRestaurants}
-              totalCount={totalCount}
-            />
+            <div className="flex flex-col gap-4 mb-4">
+              <Filters
+                filters={filters}
+                onFilterChange={setFilters}
+                restaurants={allRestaurants}
+                totalCount={totalCount}
+              />
+              <button
+                onClick={() => setShowArchived(!showArchived)}
+                className="self-end flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+                style={{
+                  backgroundColor: showArchived ? '#FCD34D' : '#F3F4F6',
+                  color: showArchived ? '#92400E' : '#6B7280'
+                }}
+              >
+                <span>{showArchived ? '✓ Archivés affichés' : 'Archivés masqués'}</span>
+              </button>
+            </div>
           </section>
 
           {/* Erreur */}
@@ -157,6 +266,8 @@ export default function HomePage() {
                   restaurants={allRestaurants}
                   selectedRestaurant={selectedRestaurant}
                   onRestaurantSelect={handleSelectRestaurant}
+                  archivedIds={archivedIds}
+                  showArchived={showArchived}
                 />
               </div>
             </aside>
@@ -179,6 +290,9 @@ export default function HomePage() {
                   selectedRestaurantId={selectedRestaurant?.id}
                   userLocation={userLocation}
                   sortBy={filters.sortBy}
+                  archivedIds={archivedIds}
+                  onToggleArchived={toggleArchived}
+                  showArchived={showArchived}
                 />
               )}
             </section>
