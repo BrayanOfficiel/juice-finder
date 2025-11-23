@@ -165,7 +165,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
+    <div className="min-h-screen bg-app">
       {/* Lien d'évitement pour l'accessibilité */}
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 bg-white border border-gray-300 rounded px-3 py-2 text-sm">
         Aller au contenu
@@ -177,7 +177,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex-1"></div>
             <div className="flex-1 flex justify-center">
-              <h1 className="text-2xl lg:text-3xl font-bold flex items-center" style={{ color: 'var(--color-text)' }}>
+              <h1 className="text-2xl lg:text-3xl font-bold flex items-center text-header">
                 <Image 
                   src="/assets/img/juice@4x.png" 
                   alt="Juice Finder Logo" 
@@ -189,15 +189,12 @@ export default function HomePage() {
               </h1>
             </div>
             <div className="flex-1 flex justify-end items-center gap-3">
-              <div className="text-sm" style={{ color: '#F5FBFF' }}>
+              <div className="text-sm text-header">
                 <span className="font-medium">{user?.username}</span>
               </div>
               <button
                 onClick={logout}
-                className="p-2 transition-colors"
-                style={{ color: '#F5FBFF' }}
-                onMouseEnter={(e) => e.currentTarget.style.color = '#2853FE'}
-                onMouseLeave={(e) => e.currentTarget.style.color = '#F5FBFF'}
+                className="btn-logout"
                 title="Se déconnecter"
                 aria-label="Se déconnecter"
               >
@@ -227,11 +224,7 @@ export default function HomePage() {
               />
               <button
                 onClick={() => setShowArchived(!showArchived)}
-                className="self-end flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors"
-                style={{
-                  backgroundColor: showArchived ? '#FCD34D' : '#F3F4F6',
-                  color: showArchived ? '#92400E' : '#6B7280'
-                }}
+                className={`btn-toggle-archived self-end ${showArchived ? 'active' : 'inactive'}`}
               >
                 <span>{showArchived ? '✓ Archivés affichés' : 'Archivés masqués'}</span>
               </button>

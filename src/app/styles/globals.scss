@@ -394,17 +394,34 @@ select {
 .badge-blue { @extend .badge; background-color: rgba($color-primary,0.12); color: $color-primary; }
 
 // === Carte Restaurant ===
-.restaurant-card { @include card-bordered; padding: $spacing-md; position: relative; cursor: pointer; transition: box-shadow $transition-fast, border-color $transition-fast; }
+.restaurant-card { @include card-bordered; padding: $spacing-md; position: relative; cursor: default; transition: box-shadow $transition-fast, border-color $transition-fast; }
 .restaurant-card:hover { box-shadow: $shadow-md; }
 .restaurant-card.is-selected { border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba($color-primary,0.15); }
 .restaurant-card__title { color: $color-secondary; font-size: $font-size-lg; font-weight: $font-weight-semibold; margin-bottom: $spacing-xs; }
 .restaurant-card__meta { display:flex; flex-wrap:wrap; gap:$spacing-xs; align-items:center; }
-.restaurant-card__address { display:flex; gap:$spacing-sm; font-size:$font-size-sm; color:$color-gray-600; }
+.restaurant-card__address { font-size:$font-size-sm; color: #F5FBFF; display:flex; align-items:center; gap:.5rem; }
+.restaurant-card__phone { font-size:$font-size-sm; color: #F5FBFF; display:flex; align-items:center; gap:.5rem; }
+.restaurant-card__text { font-size:$font-size-sm; color: $color-gray-600; }
+.restaurant-card__text--strong { color: $color-surface-text; font-weight:$font-weight-medium; }
 .restaurant-card__actions { display:flex; gap:$spacing-xs; margin-left:auto; }
 .restaurant-card__icon-btn { padding: .4rem; border-radius:$border-radius-md; background:transparent; color:$color-gray-500; display:inline-flex; align-items:center; justify-content:center; transition:background $transition-fast,color $transition-fast; }
 .restaurant-card__icon-btn:hover { background:$color-gray-100; color:var(--color-primary); }
 .restaurant-card__icon-btn--call:hover { background:rgba($color-success,0.15); color:darken($color-success,25%); }
 .restaurant-card__section { margin-top:$spacing-sm; padding-top:$spacing-sm; border-top:1px solid $color-gray-700; }
+
+/* Boutons d'action compacts circulaires */
+.icon-action { width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; border-radius:50%; border:1px solid $color-surface-outline; background:rgba($color-surface-dark-3,0.35); color:$color-gray-400; cursor:pointer; transition:background .2s,color .2s,border-color .2s, box-shadow .2s; }
+.icon-action:hover { background:$color-surface-dark-2; color:var(--color-primary); border-color:var(--color-primary); }
+.icon-action:focus { outline:none; box-shadow:0 0 0 3px rgba($color-primary,0.35); }
+.icon-action--accent { color:var(--color-primary); border-color:var(--color-primary); }
+.icon-action--success { color:darken($color-success,15%); border-color:$color-success; }
+.icon-action--success:hover { background:rgba($color-success,0.2); }
+
+/* Variante archive (reuse but keep color) */
+.btn-archive { @extend .icon-action; }
+.btn-archive.archived { color:#FCD34D; border-color:#FCD34D; background:rgba(#FCD34D,0.12); }
+.btn-archive.archived:hover { background:rgba(#FCD34D,0.25); }
+.btn-archive .archive-icon { font-size:1rem; }
 
 @media (max-width: 768px) {
   .restaurant-card__icon-btn {
@@ -491,7 +508,6 @@ select {
 .btn-sync--dark { @include button-success; background:$color-success; color:$color-secondary; }
 
 /* Améliorations contraste dark */
-.restaurant-card--dark .restaurant-card__address { color: rgba(255,255,255,0.85); }
 .update-panel--dark .update-panel__info { color: rgba(255,255,255,0.85); }
 .update-panel--dark .update-panel__stats h4 { color: var(--color-text); }
 .update-panel--dark .update-panel__stats .space-y-1 p { color: rgba(255,255,255,0.9); }
@@ -499,16 +515,286 @@ select {
 
 // === Classes texte sémantiques ===
 .text-primary { color: $color-primary !important; }
-.text-secondary { color: $color-secondary !important; }
-.text-success { color: $color-success !important; }
-.text-error { color: $color-error !important; }
-.text-warning { color: $color-warning !important; }
-.text-info { color: $color-info !important; }
-.text-inverse { color: var(--color-text) !important; }
-.text-muted-light { color: rgba(255,255,255,0.7) !important; }
-.text-surface { color: $color-surface-text !important; }
+.text-header { color: #F5FBFF; }
+.text-dark { color: #092C42; }
+.text-yellow-dark { color: #92400E; }
+.text-gray-medium { color: #6B7280; }
 
-/* Pills pour filtres */
-.pill { border:1px solid $color-surface-outline; background:$color-surface-dark-3; color:var(--color-text); border-radius:$border-radius-lg; padding:.5rem .75rem; font-size:$font-size-sm; transition: all $transition-fast; }
-.pill:hover { border-color:$color-primary; }
-.pill--active { background:$color-primary; border-color:$color-primary; color:#fff; }
+// === Classes background ===
+.bg-user-avatar { background-color: #E5EDFF; }
+.bg-user-avatar-hover { background-color: #D0DDFF; }
+.bg-archived-active { background-color: #FCD34D; }
+.bg-archived-inactive { background-color: #F3F4F6; }
+.bg-info-box { 
+  background-color: rgba(40, 83, 254, 0.1);
+  border: 1px solid rgba(40, 83, 254, 0.3);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+// === Classes boutons ===
+.btn-logout {
+  padding: 0.5rem;
+  transition: color 0.2s;
+  color: #F5FBFF;
+  cursor: pointer;
+  
+  &:hover {
+    color: $color-primary;
+  }
+}
+
+.btn-toggle-archived {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: $border-radius-lg;
+  font-weight: $font-weight-medium;
+  font-size: $font-size-sm;
+  transition: all 0.2s;
+  cursor: pointer;
+  
+  &.active {
+    background-color: #FCD34D;
+    color: #92400E;
+  }
+  
+  &.inactive {
+    background-color: #F3F4F6;
+    color: #6B7280;
+  }
+}
+
+.btn-archive {
+  padding: 0.5rem;
+  border-radius: $border-radius-lg;
+  transition: all 0.3s;
+  cursor: pointer;
+  
+  .archive-icon {
+    height: 1.25rem;
+    width: 1.25rem;
+    transition: color 0.3s;
+  }
+  
+  &.archived .archive-icon {
+    color: #FCD34D;
+  }
+  
+  &:not(.archived) .archive-icon {
+    color: #9CA3AF;
+  }
+  
+  &:hover.archived .archive-icon {
+    color: #FCD34D;
+  }
+  
+  &:hover:not(.archived) .archive-icon {
+    color: #6B7280;
+  }
+}
+
+.btn-filter-type {
+  padding: 0.5rem 0.75rem;
+  font-size: $font-size-sm;
+  border-radius: $border-radius-lg;
+  border: 1px solid;
+  transition: all 0.2s;
+  cursor: pointer;
+  
+  &.active {
+    background-color: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
+  }
+  
+  &:not(.active) {
+    background-color: var(--color-surface-dark-3);
+    color: var(--color-text);
+    border-color: var(--color-surface-outline);
+    
+    &:hover {
+      border-color: #60a5fa;
+    }
+  }
+}
+
+.btn-export {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  border-radius: $border-radius-lg;
+  transition: all 0.2s;
+  
+  &:not(:disabled) {
+    background-color: var(--color-success);
+    color: var(--color-secondary);
+    cursor: pointer;
+  }
+  
+  &:disabled {
+    background-color: var(--color-surface-dark-3);
+    color: rgba(255, 255, 255, 0.4);
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-reset {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  border-radius: $border-radius-lg;
+  border: 1px solid var(--color-surface-outline);
+  background-color: var(--color-surface-dark-3);
+  color: var(--color-text);
+  transition: all 0.2s;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: var(--color-surface-dark-2);
+  }
+}
+
+.btn-user-card {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  text-align: center;
+  transition: box-shadow 0.2s;
+  cursor: pointer;
+  
+  &:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.btn-add-user {
+  @extend .btn-user-card;
+  border: 2px dashed #D1D5DB;
+  
+  &:hover {
+    border-color: $color-primary;
+  }
+}
+
+.btn-back {
+  font-size: $font-size-sm;
+  color: #6B7280;
+  cursor: pointer;
+  transition: color 0.2s;
+  
+  &:hover {
+    color: #111827;
+  }
+}
+
+.btn-submit-user {
+  width: 100%;
+  color: white;
+  font-weight: $font-weight-semibold;
+  padding: 0.75rem;
+  border-radius: $border-radius-lg;
+  background-color: $color-primary;
+  transition: background-color 0.2s;
+  
+  &:not(:disabled) {
+    cursor: pointer;
+    
+    &:hover {
+      background-color: #1a3fcc;
+    }
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-toggle-mobile {
+  width: 100%;
+  text-align: start;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+// === Classes card restaurant archivée ===
+.restaurant-card--archived {
+  outline: 1px solid #FCD34D;
+  box-shadow: 0 0 0 1px #FCD34D;
+}
+
+// === Classes user avatar ===
+.user-avatar {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.75rem;
+  background-color: #E5EDFF;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #D0DDFF;
+  }
+}
+
+.user-avatar-icon {
+  font-size: 1.5rem;
+  color: $color-primary;
+}
+
+.user-avatar-add {
+  @extend .user-avatar;
+  background-color: #F3F4F6;
+  
+  &:hover {
+    background-color: #E5EDFF;
+  }
+  
+  .icon {
+    color: #6B7280;
+  }
+}
+
+// === Classes label et formulaire ===
+.label-dark {
+  color: rgba(255, 255, 255, 0.85);
+  display: block;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  margin-bottom: 0.5rem;
+}
+
+.label-user {
+  display: block;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  margin-bottom: 0.5rem;
+  color: #092C42;
+}
+
+.input-user {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: $border-radius-lg;
+  color: #092C42;
+  background-color: #FFFFFF;
+  
+  &:focus {
+    outline: none;
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.1);
+  }
+}

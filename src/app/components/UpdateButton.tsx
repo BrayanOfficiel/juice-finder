@@ -162,12 +162,14 @@ export default function UpdateButton() {
               <button
                 onClick={handleCleanup}
                 className="update-panel__small-btn update-panel__small-btn--warn"
+                style={{ cursor: 'pointer' }}
               >
                 🧹 Nettoyer (supprimer sans nom)
               </button>
               <button
                 onClick={handleReset}
                 className="update-panel__small-btn update-panel__small-btn--danger"
+                style={{ cursor: 'pointer' }}
               >
                 🗑️ Vider la base (Reset)
               </button>

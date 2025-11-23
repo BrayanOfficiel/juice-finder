@@ -113,8 +113,7 @@ export default function Filters({ filters, onFilterChange, restaurants, totalCou
       <div className="flex items-center justify-start lg:mb-0">
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="lg:hidden w-full text-start"
-          style={{ color: 'var(--color-text)' }}
+          className="btn-toggle-mobile lg:hidden"
           aria-label="Toggle filters"
         >
           <FontAwesomeIcon 
@@ -129,7 +128,7 @@ export default function Filters({ filters, onFilterChange, restaurants, totalCou
       <div className={`space-y-4 ${showFilters ? 'block mt-4' : 'hidden lg:block'}`}>
         {/* Types d'établissements */}
         <div>
-          <label className="block text-xs font-medium mb-2" style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
+          <label className="label-dark">
             Type d&apos;établissement
           </label>
           <div className="flex flex-wrap gap-2 mb-3">
@@ -137,16 +136,7 @@ export default function Filters({ filters, onFilterChange, restaurants, totalCou
               <button
                 key={type.value}
                 onClick={() => handleTypeChange(type.value)}
-                className={`px-3 py-2 text-sm rounded-lg border transition-all ${
-                  filters.type === type.value
-                    ? 'text-white border-blue-600'
-                    : 'border-gray-300 hover:border-blue-400'
-                }`}
-                style={{
-                  backgroundColor: filters.type === type.value ? 'var(--color-primary)' : 'var(--color-surface-dark-3)',
-                  color: filters.type === type.value ? '#fff' : 'var(--color-text)',
-                  borderColor: filters.type === type.value ? 'var(--color-primary)' : 'var(--color-surface-outline)'
-                }}
+                className={`btn-filter-type ${filters.type === type.value ? 'active' : ''}`}
               >
                 <FontAwesomeIcon icon={type.icon} className="mr-2" />
                 {type.label}
@@ -158,7 +148,7 @@ export default function Filters({ filters, onFilterChange, restaurants, totalCou
         {/* Localisation, Arrondissement, Tri et Limite */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-3">
           <div>
-            <label htmlFor="location" className="block text-xs font-medium mb-2" style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
+            <label htmlFor="location" className="label-dark">
               Ville / Département
             </label>
             <select
@@ -187,7 +177,7 @@ export default function Filters({ filters, onFilterChange, restaurants, totalCou
           </div>
 
           <div>
-            <label htmlFor="arrondissement" className="block text-xs font-medium mb-2" style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
+            <label htmlFor="arrondissement" className="label-dark">
               Arrondissement
             </label>
             <select
@@ -213,7 +203,7 @@ export default function Filters({ filters, onFilterChange, restaurants, totalCou
           </div>
 
           <div>
-            <label htmlFor="sortBy" className="block text-xs font-medium mb-2" style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
+            <label htmlFor="sortBy" className="label-dark">
               Trier par
             </label>
             <select
@@ -229,7 +219,7 @@ export default function Filters({ filters, onFilterChange, restaurants, totalCou
           </div>
 
           <div>
-            <label htmlFor="limit" className="block text-xs font-medium mb-2" style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
+            <label htmlFor="limit" className="label-dark">
               Limite de résultats
             </label>
             <select
@@ -247,11 +237,7 @@ export default function Filters({ filters, onFilterChange, restaurants, totalCou
 
         {/* Message info géolocalisation */}
         {filters.sortBy === 'distance' && (
-          <div className="text-xs p-3 rounded-lg" style={{ 
-            backgroundColor: 'rgba(40, 83, 254, 0.1)', 
-            border: '1px solid rgba(40, 83, 254, 0.3)',
-            color: 'rgba(255, 255, 255, 0.9)'
-          }}>
+          <div className="text-xs p-3 rounded-lg bg-info-box">
             <div className="flex items-start gap-2">
               <FontAwesomeIcon icon={faCircleInfo} className="h-4 w-4 mt-0.5 flex-shrink-0" />
               <p>
@@ -266,12 +252,7 @@ export default function Filters({ filters, onFilterChange, restaurants, totalCou
           <button
             onClick={handleExport}
             disabled={restaurants.length === 0}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:cursor-not-allowed"
-            style={{
-              backgroundColor: restaurants.length === 0 ? 'var(--color-surface-dark-3)' : 'var(--color-success)',
-              color: restaurants.length === 0 ? 'rgba(255,255,255,0.4)' : 'var(--color-secondary)',
-              opacity: restaurants.length === 0 ? 0.5 : 1
-            }}
+            className="btn-export disabled:cursor-not-allowed"
           >
             <FontAwesomeIcon icon={faDownload} className="h-4 w-4" />
             Exporter CSV
@@ -279,23 +260,17 @@ export default function Filters({ filters, onFilterChange, restaurants, totalCou
 
           <button
             onClick={handleReset}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border transition-colors"
-            style={{
-              backgroundColor: 'var(--color-surface-dark-3)',
-              color: 'var(--color-text)',
-              borderColor: 'var(--color-surface-outline)'
-            }}
+            className="btn-reset"
           >
             <FontAwesomeIcon icon={faRotateRight} className="h-4 w-4" />
             Réinitialiser
           </button>
 
-            <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold text-gray-700 m-0">Filtres <span className="text-xs text-gray-500">
-            ({totalCount.toLocaleString('fr-FR')} résultat{totalCount > 1 ? 's' : ''})
-          </span></h3>
-
-            </div>
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-gray-700 m-0">Filtres <span className="text-xs text-gray-500">
+              ({totalCount.toLocaleString('fr-FR')} résultat{totalCount > 1 ? 's' : ''})
+            </span></h3>
+          </div>
         </div>
       </div>
     </div>

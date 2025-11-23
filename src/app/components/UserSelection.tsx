@@ -341,7 +341,7 @@ export default function UserSelection({ onUserSelected }: UserSelectionProps) {
             <button
               onClick={() => setShowCreateUser(true)}
               className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow p-6 text-center group border-2 border-dashed"
-              style={{ borderColor: '#D1D5DB' }}
+              style={{ borderColor: '#D1D5DB', cursor: 'pointer' }}
               onMouseEnter={(e) => e.currentTarget.style.borderColor = '#2853FE'}
               onMouseLeave={(e) => e.currentTarget.style.borderColor = '#D1D5DB'}
             >

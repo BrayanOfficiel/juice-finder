@@ -63,26 +63,15 @@ export default function RestaurantCard({
   return (
     <div
       onClick={onSelect}
-      className={`restaurant-card restaurant-card--dark ${isSelected ? 'is-selected' : ''}`}
-      style={isArchived && !isSelected ? { 
-        outline: '1px solid #FCD34D',
-        boxShadow: '0 0 0 1px #FCD34D'
-      } : undefined}
+      className={`restaurant-card restaurant-card--dark ${isSelected ? 'is-selected' : ''} ${isArchived && !isSelected ? 'restaurant-card--archived' : ''}`}
     >
-      {/* En-tête */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <h3 className="restaurant-card__title">
-            {restaurant.name || 'Sans nom'}
-          </h3>
+          <h3 className="restaurant-card__title">{restaurant.name || 'Sans nom'}</h3>
           <div className="restaurant-card__meta py-2">
-            <span className="badge-type text-xs font-medium">
-              {translateType(restaurant.type)}
-            </span>
+            <span className="badge-type text-xs font-medium">{translateType(restaurant.type)}</span>
             {showDistance && distance !== undefined && (
-              <span 
-                className="badge-green text-xs font-medium px-2 py-1"
-              >
+              <span className="badge-green text-xs font-medium px-2 py-1">
                 <FontAwesomeIcon icon={faMapMarkerAlt} />
                 {distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`}
               </span>
@@ -91,66 +80,48 @@ export default function RestaurantCard({
         </div>
         {onToggleArchived && (
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleArchived();
-            }}
-            className="p-2 hover:color-secondary rounded-lg transition-colors"
+            onClick={(e) => { e.stopPropagation(); onToggleArchived(); }}
+            className={`btn-archive ${isArchived ? 'archived' : ''}`}
             title={isArchived ? 'Désarchiver' : 'Archiver'}
             aria-label={isArchived ? 'Désarchiver' : 'Archiver'}
           >
-            <FontAwesomeIcon 
-              icon={faArchive} 
-              className="h-5 w-5"
-              style={{ color: isArchived ? '#FCD34D' : '#9CA3AF' }}
-            />
+            <FontAwesomeIcon icon={faArchive} className="archive-icon" />
           </button>
         )}
       </div>
 
-      {/* Adresse */}
       {(restaurant.street || restaurant.city) && (
         <div className="restaurant-card__address mb-2">
-          <FontAwesomeIcon icon={faLocationDot} className="h-4 w-4 mt-0.5 flex-shrink-0" />
+          <FontAwesomeIcon icon={faLocationDot} className="h-4 w-4 flex-shrink-0" />
           <span>{formatAddress(restaurant)}</span>
         </div>
       )}
 
-      {/* Téléphone */}
       {restaurant.phone && (
-        <div className="flex items-center gap-2 mb-2">
-          <FontAwesomeIcon icon={faPhone} className="h-4 w-4 icon-muted flex-shrink-0" />
-          <span className="text-sm text-body">{formatPhoneNumber(restaurant.phone)}</span>
+        <div className="restaurant-card__phone mb-2">
+          <FontAwesomeIcon icon={faPhone} className="h-4 w-4 flex-shrink-0" />
+          <span>{formatPhoneNumber(restaurant.phone)}</span>
           <div className="restaurant-card__actions">
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCopyPhone();
-              }}
-              className="restaurant-card__icon-btn action-btn-dark"
+              onClick={(e) => { e.stopPropagation(); handleCopyPhone(); }}
+              className="icon-action"
               title="Copier le numéro"
+              aria-label="Copier le numéro"
             >
-              {copied ? (
-                <FontAwesomeIcon icon={faCopy} className="h-5 w-5 icon-accent" />
-              ) : (
-                <FontAwesomeIcon icon={faCopy} className="h-5 w-5 icon-light" />
-              )}
+              <FontAwesomeIcon icon={faCopy} className={copied ? 'text-primary' : ''} />
             </button>
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCall();
-              }}
-              className="restaurant-card__icon-btn restaurant-card__icon-btn--call action-btn-dark action-btn-dark--call"
+              onClick={(e) => { e.stopPropagation(); handleCall(); }}
+              className="icon-action icon-action--success"
               title="Appeler"
+              aria-label="Appeler"
             >
-              <FontAwesomeIcon icon={faPhone} className="h-5 w-5 icon-light" />
+              <FontAwesomeIcon icon={faPhone} />
             </button>
           </div>
         </div>
       )}
 
-      {/* Informations supplémentaires */}
       <div className="restaurant-card__section flex flex-wrap gap-3">
         {restaurant.website && (
           <a
@@ -164,7 +135,6 @@ export default function RestaurantCard({
             Site web
           </a>
         )}
-        
         <a
           href={getGoogleMapsLink(restaurant, 'name')}
           target="_blank"
@@ -177,23 +147,16 @@ export default function RestaurantCard({
         </a>
       </div>
 
-      {/* Badges */}
       {(restaurant.takeaway || restaurant.delivery || restaurant.wheelchair) && (
         <div className="restaurant-card__section flex flex-wrap gap-2">
           {restaurant.takeaway === 'yes' && (
-            <span className="badge-type text-xs inline-flex items-center px-2 py-1 rounded">
-              🥡 À emporter
-            </span>
+            <span className="badge-type text-xs inline-flex items-center px-2 py-1 rounded">🥡 À emporter</span>
           )}
           {restaurant.delivery === 'yes' && (
-            <span className="badge-type text-xs inline-flex items-center px-2 py-1 rounded">
-              🚚 Livraison
-            </span>
+            <span className="badge-type text-xs inline-flex items-center px-2 py-1 rounded">🚚 Livraison</span>
           )}
           {restaurant.wheelchair === 'yes' && (
-            <span className="badge-type text-xs inline-flex items-center px-2 py-1 rounded">
-              ♿ Accessible PMR
-            </span>
+            <span className="badge-type text-xs inline-flex items-center px-2 py-1 rounded">♿ Accessible PMR</span>
           )}
         </div>
       )}
